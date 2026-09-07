@@ -1,0 +1,20 @@
+# Dipendenze / build
+**/node_modules/
+**/dist/
+**/.quasar/
+*.log
+
+# Cartelle di lavoro locali (non parte dell'app)
+.claude/
+scratchpad/
+
+# Repo git annidato (clone separato, non fa parte di questo progetto)
+/pwndoc/
+
+# Script/PoC locali non correlati all'app
+poc.js
+pwndoc-cli
+
+# Ambiente locale con eventuali segreti
+# (.env è versionato con valori non sensibili; usa .env.local per i tuoi override)
+.env.local

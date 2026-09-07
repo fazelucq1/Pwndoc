@@ -1,0 +1,90 @@
+// Filename whitelist validation for template creation
+function validFilename(filename) {
+    const regex = /^[\p{Letter}\p{Mark}0-9 \[\]'()_,-]+$/iu;
+    
+    return (regex.test(filename));
+}
+exports.validFilename = validFilename;
+
+function isSafePath(filePath) {
+  return !filePath.includes('..')
+}
+exports.isSafePath = isSafePath
+
+// Escape XML special entities when using {@RawXML} in template generation
+function escapeXMLEntities(input) {
+    var XML_CHAR_MAP = { '<': '&lt;', '>': '&gt;', '&': '&amp;'};
+    var standardEncode = input.replace(/[<>&]/g, function (ch) { return XML_CHAR_MAP[ch]; });
+    return standardEncode;
+}
+exports.escapeXMLEntities = escapeXMLEntities;
+
+// Convert number to 3 digits format if under 100
+function lPad(number) {
+    if (number <= 99) { number = ("00" + number).slice(-3); }
+    return `${number}`;
+}
+exports.lPad = lPad;
+
+function escapeRegex(regex) {
+    return regex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+exports.escapeRegex = escapeRegex
+
+function generateUUID() {
+    return require('crypto').randomBytes(32).toString('hex')
+}
+exports.generateUUID = generateUUID
+
+var getObjectPaths = (obj, prefix = '') =>
+  Object.keys(obj).reduce((res, el) => {
+    if( Array.isArray(obj[el]) ) {
+      return [...res, prefix + el];
+    } else if( typeof obj[el] === 'object' && obj[el] !== null ) {
+      return [...res, ...getObjectPaths(obj[el], prefix + el + '.')];
+    }
+    return [...res, prefix + el];
+  }, [])
+exports.getObjectPaths = getObjectPaths
+
+function isHttpUrl(urlString) {
+    try {
+        const { protocol } = new URL(urlString);
+        return protocol === 'http:' || protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+exports.isHttpUrl = isHttpUrl
+
+function getSockets(io, room) {
+  var result = []
+  io.sockets.sockets.forEach((data) => {
+    if (data.rooms.has(room)) {
+      result.push(data)
+    }
+  })
+  return result
+}
+exports.getSockets = getSockets
+
+function hexToRgb(color) {
+  var normalized = color.replace('#', '')
+  return {
+    r: parseInt(normalized.substring(0, 2), 16),
+    g: parseInt(normalized.substring(2, 4), 16),
+    b: parseInt(normalized.substring(4, 6), 16)
+  }
+}
+
+function colorDistance(colorA, colorB) {
+  var rgbA = hexToRgb(colorA)
+  var rgbB = hexToRgb(colorB)
+
+  return Math.sqrt(
+    Math.pow(rgbA.r - rgbB.r, 2) +
+    Math.pow(rgbA.g - rgbB.g, 2) +
+    Math.pow(rgbA.b - rgbB.b, 2)
+  )
+}
+exports.colorDistance = colorDistance

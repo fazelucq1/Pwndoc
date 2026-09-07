@@ -1,0 +1,2 @@
+=== test: accesso nginx sulla 8443 ===
+curl -sk https://127.0.0.1:8443/ -w n- test: /socket.io proxato a backend ===

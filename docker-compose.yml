@@ -1,0 +1,57 @@
+services:
+
+  mongodb:
+    image: mongo:4.2.15
+    command: --wiredTigerCacheSizeGB 1 # 50% of (max RAM - 1GB) - minimum 0.25 (Modify it depending on defined RAM limits)
+    deploy:
+      resources:
+        limits:
+          memory: 3G # Maximum memory to allocate (Modify it depending on host ressources - leave at least 1GB free for host)
+        reservations:
+          memory: 1G # Minimum memory required
+    restart: always
+    environment:
+      - MONGO_DB=pwndoc
+    networks:
+      - backend-internal
+
+  pwndoc-backend:
+    environment:
+      - DB_SERVER=mongodb
+      - DB_NAME=pwndoc
+    depends_on:
+      - mongodb
+    restart: always
+    networks:
+      - backend-internal
+      - frontend-internal
+
+  pwndoc-frontend:
+    restart: always
+    depends_on:
+      - pwndoc-backend
+    networks:
+      - frontend-internal
+
+  pwndoc-languagetools:
+    profiles: [languagetools]
+    init: true
+    restart: always
+    environment:
+      - LT_JAVA_XMS=${LT_JAVA_XMS:-512m}
+      - LT_JAVA_XMX=${LT_JAVA_XMX:-1g}
+      - API_KEY=${LT_API_KEY:-}
+      - REQUIRE_API_KEY=${LT_REQUIRE_API_KEY:-true}
+    volumes:
+      - languagetools-data:/data
+    networks:
+      - backend-internal
+
+networks:
+  backend-internal:
+    driver: bridge
+  frontend-internal:
+    driver: bridge
+
+volumes:
+  languagetools-data:
