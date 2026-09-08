@@ -30,7 +30,13 @@ export default {
       'pre',
       'img',
       'legend',
-      'comment'
+      'comment',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td'
     ]
     
     DOMPurify.setConfig({
@@ -76,6 +82,12 @@ export default {
       else if (node.tagName === 'COMMENT') {
         if (data.attrName === 'id') {
           data.forceKeepAttr = true
+        }
+      }
+      // Filter authorized attributes for table cells (<td>/<th> colspan/rowspan/colwidth)
+      else if (node.tagName === 'TD' || node.tagName === 'TH') {
+        if (data.attrName === 'colspan' || data.attrName === 'rowspan' || data.attrName === 'colwidth') {
+          data.forceKeepAttr = true;
         }
       }
     });
