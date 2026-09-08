@@ -939,6 +939,12 @@ export default {
         text-align: left;
       }
 
+      // Prima riga di ogni tabella sempre in grigio chiaro
+      tr:first-child > th,
+      tr:first-child > td {
+        background-color: #f0f0f0;
+      }
+
       .selectedCell:after {
         z-index: 2;
         position: absolute;
