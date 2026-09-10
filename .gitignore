@@ -18,3 +18,7 @@ pwndoc-cli
 # Ambiente locale con eventuali segreti
 # (.env è versionato con valori non sensibili; usa .env.local per i tuoi override)
 .env.local
+
+# Local DB data & backups (never commit — may contain user/client data)
+backend/mongo-data-dev/
+backend/backup/
