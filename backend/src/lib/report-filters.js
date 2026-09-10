@@ -3,6 +3,7 @@ var html2ooxml = require('./html2ooxml');
 var translate = require('../translate');
 var utils = require("./utils");
 var _ = require('lodash');
+var chartGenerator = require('./chart-generator'); // Bug #2: severity pie chart
 
 // *** Angular parser filters ***
 
@@ -328,6 +329,16 @@ defaultFilters.convertHTML = function(input, style) {
     else
         var result = html2ooxml(input.replace(/(<p><\/p>)+$/, ''), style)
     return result;
+}
+
+// Bug #2: Severity pie chart. Emits an inline chart drawing and registers the
+// chart part/relationship/content-type in the .docx ZIP (see chart-generator.js).
+// The ZIP + translate function are provided per generation via chartGenerator.reset()
+// in report-generator.js, and chartGenerator.inject() finalises the ZIP after render.
+// Example: {@findings | pieChart:'Severity':'000000':'FF0000':'FFA500':'FFFF00'}
+// Colours are hex WITHOUT '#'; optional 6th arg: 'base'(default)|'temporal'|'environmental'.
+defaultFilters.pieChart = function(input, title, colorCrit, colorHigh, colorMed, colorLow, scoreType) {
+    return chartGenerator.pieChartFilter(input, title, colorCrit, colorHigh, colorMed, colorLow, scoreType)
 }
 
 // Count vulnerability by severity

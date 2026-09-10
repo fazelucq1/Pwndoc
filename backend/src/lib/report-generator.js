@@ -2,6 +2,7 @@ var fs = require('fs');
 var Docxtemplater = require('docxtemplater');
 var PizZip = require("pizzip");
 var reportFilters = require('./report-filters');
+var chartGenerator = require('./chart-generator'); // Bug #2: severity pie chart
 var reportFiltersCustom;
 // If the custom filters file is not found, fallback to empty filters
 try {
@@ -26,11 +27,22 @@ async function generateDoc(audit) {
     var content = fs.readFileSync(templatePath, "binary");
     
     var zip = new PizZip(content);
-    
+
     translate.setLocale(audit.language)
     $t = translate.translate
 
     var settings = await Settings.getAll();
+
+    // Bug #2: feed severity colours from settings so the pie chart matches the
+    // severity cell colours when the template tag omits explicit colours.
+    var cvssColors = (settings.report && settings.report.public && settings.report.public.cvssColors) || {}
+    chartGenerator.reset(zip, $t, {
+        crit: cvssColors.criticalColor,
+        high: cvssColors.highColor,
+        med: cvssColors.mediumColor,
+        low: cvssColors.lowColor
+    })
+
     var preppedAudit = await prepAuditData(audit, settings)
 
     var opts = {};
@@ -110,6 +122,10 @@ async function generateDoc(audit) {
             throw error
         }
     }
+    // Bug #2: finalise pie-chart parts (relationships + content types) in the ZIP
+    // after render, before serialising. No-op when the template used no pieChart tag.
+    chartGenerator.inject()
+
     var buf = doc.getZip().generate({type:"nodebuffer"});
 
     return buf;
