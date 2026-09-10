@@ -204,7 +204,14 @@ function html2ooxml(html, style = '') {
                 if (tblRows.length > 0) {
                     paragraphs.push(new docx.Table({
                         rows: tblRows,
-                        width: { size: 100, type: "pct" }
+                        width: { size: 100, type: "pct" },
+                        // Bug #3: reference the "CapStyle" table style defined in the Word
+                        // template's styles.xml. The header colour (azure by default) is
+                        // inherited from that style's firstRow conditional formatting, so it
+                        // stays fully overridable per client by editing the template — no
+                        // hardcoded shading here. tableHeader:true on the first row (below)
+                        // triggers the style's firstRow formatting via tblLook.
+                        style: "CapStyle"
                     }))
                 }
                 tmpTable = []
@@ -267,6 +274,12 @@ function html2ooxml(html, style = '') {
     var filteredXml = prepXml["w:body"].filter(e => {return e && (Object.keys(e)[0] === "w:p" || Object.keys(e)[0] === "w:tbl")})
     var dataXml = xml(filteredXml)
     dataXml = dataXml.replace(/w:numId w:val="{2-0}"/g, 'w:numId w:val="2"') // Replace numbering to have correct value
+    // Bug #3: docx does not emit <w:tblLook>, but Word only applies a table style's
+    // conditional formatting (the firstRow = header colour of "CapStyle") when the
+    // table's tblLook enables firstRow. Inject it at the end of every <w:tblPr>
+    // (schema position: tblLook is last), so the azure header from the template style
+    // is actually rendered. Kept as post-processing to match the existing approach.
+    dataXml = dataXml.replace(/<\/w:tblPr>/g, '<w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/></w:tblPr>')
 
     return dataXml
         
